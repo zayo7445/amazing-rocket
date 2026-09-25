@@ -1,0 +1,34 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{amsmath}
+
+\title{Raketstyrning}
+\author{}
+\date{September 2026}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+
+\newpage
+\section{Introduktion}
+Detta projekt har som syfte att simulera styrningen av en raket mot ett givet mål. Detta inkluderar dels att lösa den differentialekvation som beskriver raketens bana, samt att hitta en metod för att styra raketen mot målet. Raketen rör sig i två dimensioner och motorerna går alltid på full kraft, så att styra raketen innebär i detta fall att bestämma den vinkel motorn är riktad mot.
+\newpage
+\section{Matematiska modeller och lösningsmetoder}
+\[
+    \begin{cases}
+        \mathbf{u_1} = \mathbf{p}\\
+        \mathbf{u_2} = \mathbf{v}
+    \end{cases}
+    \begin{cases}
+        \mathbf{u_1'}=\mathbf{v}=\mathbf{u_2}\\
+        \mathbf{u_2'}=\mathbf{a}=\frac{\mathbf{\bar{F}} + m'(t)\mathbf{\bar{u}}(t)}{m(t)}  \\
+    \end{cases}
+\]
+    \newpage
+
+\section{Tolkning och analys}
+
+\end{document}
