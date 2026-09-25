@@ -55,7 +55,6 @@ def system(theta):
 
 OdeResult = namedtuple("OdeResult", ["t", "y"])
 
-
 def rk4(f, tspan, y0, h=H):
     steps = round((tspan[1] - tspan[0]) / h)
     t = np.linspace(tspan[0], tspan[1], steps + 1)
