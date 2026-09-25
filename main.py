@@ -14,38 +14,14 @@ C = 0.05
 G = np.array([0, -9.82])
 
 TIME = 10
-
 INIT_LAUNCH_HEIGHT = 20
 
 START_POS = np.array([0, 0])
 START_VEL = np.array([0, 0])
 GOAL_POS = np.array([80, 60])
-
 X_AXIS = np.array([1, 0])
 
 H = 0.01
-
-
-def angle_between(p1, p2):
-    vec = p1 - p2
-    unit = vec / np.linalg.norm(vec)
-    return np.arctan2(unit[1], unit[0])
-
-
-def theta_toward(t, p, v):
-    if p[1] < INIT_LAUNCH_HEIGHT:
-        return -np.pi/2
-    else:
-        return angle_between(p, GOAL_POS)
-
-
-def theta_constant(angle):
-    def theta(t, p, v):
-        if p[1] < INIT_LAUNCH_HEIGHT:
-            return -np.pi/2
-        else:
-            return angle
-    return theta
 
 
 def m(t):
@@ -81,7 +57,7 @@ def system(theta):
 OdeResult = namedtuple("OdeResult", ["t", "y"])
 
 
-def rk4(f, tspan, y0, h):
+def rk4(f, tspan, y0, h=H):
     steps = round((tspan[1] - tspan[0]) / h)
     t = np.linspace(tspan[0], tspan[1], steps + 1)
     y = np.zeros((len(t), len(y0)))
@@ -97,26 +73,49 @@ def rk4(f, tspan, y0, h):
     return OdeResult(t, np.transpose(y))
 
 
-# sol = solve_ivp(system(theta_toward), [0, TIME], np.concatenate([START_POS, START_VEL]))
-# sol = rk4(system(theta_toward), [0, TIME], np.concatenate([START_POS, START_VEL]), H)
-
-def find_angle(angle):
-    angle, = angle
-    sol = rk4(system(theta_constant(angle)), [0, TIME], np.concatenate([START_POS, START_VEL]), H)
-    dist = cdist(np.transpose(sol.y[:2]), np.array([GOAL_POS]))
-    return dist.min()
+SOLVER = rk4
 
 
-angle = angle_between(START_POS, GOAL_POS)
-angle, = fsolve(find_angle, angle)
+def theta_const(angle):
+    def theta(t, p, v):
+        if p[1] < INIT_LAUNCH_HEIGHT:
+            return -np.pi/2
+        else:
+            return angle
+    return theta
+
+
+def angle_between(p1, p2):
+    vec = p1 - p2
+    unit = vec / np.linalg.norm(vec)
+    return np.arctan2(unit[1], unit[0])
+
+
+def apply_dot(arr1, arr2):
+    return np.sum(arr1 * arr2, axis=1)
+
+
+def min_dist(angle):
+    sol = SOLVER(system(theta_const(angle[0])), [0, TIME], np.concatenate([START_POS, START_VEL]))
+    points = np.transpose(sol.y[:2])
+
+    a = points[:-1]
+    b = points[1:]
+    ab = b - a
+    t = apply_dot(GOAL_POS - a, ab) / apply_dot(ab, ab)
+    t = np.clip(t, 0, 1)
+    closest = a + t[:, None] * ab
+    dist = np.linalg.norm(closest - GOAL_POS, axis=1)
+    return np.min(dist)
+
+
+angle = fsolve(min_dist, [angle_between(START_POS, GOAL_POS)])[0]
+sol = SOLVER(system(theta_const(angle)), [0, TIME], np.concatenate([START_POS, START_VEL]))
 
 print(angle)
-
-sol = rk4(system(theta_constant(angle)), [0, TIME], np.concatenate([START_POS, START_VEL]), H)
 
 plt.plot(sol.y[0], sol.y[1], "--")
 plt.plot(START_POS[0], START_POS[1], "or")
 plt.plot(GOAL_POS[0], GOAL_POS[1], "og")
-
 plt.grid()
 plt.show()
