@@ -19,7 +19,6 @@ INIT_LAUNCH_HEIGHT = 20
 START_POS = np.array([0, 0])
 START_VEL = np.array([0, 0])
 GOAL_POS = np.array([80, 60])
-X_AXIS = np.array([1, 0])
 
 H = 0.01
 
@@ -111,11 +110,16 @@ def min_dist(angle):
 
 angle = fsolve(min_dist, [angle_between(START_POS, GOAL_POS)])[0]
 sol = SOLVER(system(theta_const(angle)), [0, TIME], np.concatenate([START_POS, START_VEL]))
+print(np.rad2deg(angle))
 
-print(angle)
+plt.title("Rocket path")
+plt.xlabel("x (m)")
+plt.ylabel("y (m)")
 
-plt.plot(sol.y[0], sol.y[1], "--")
-plt.plot(START_POS[0], START_POS[1], "or")
-plt.plot(GOAL_POS[0], GOAL_POS[1], "og")
+plt.plot(START_POS[0], START_POS[1], "or", label="Start position")
+plt.plot(GOAL_POS[0], GOAL_POS[1], "og", label="Goal position")
+plt.plot(sol.y[0], sol.y[1], "--", label="Rocket path")
+plt.legend()
+
 plt.grid()
 plt.show()
