@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage{graphicx} % Required for inserting images
 \usepackage{amsmath}
+\usepackage{minted} % For code with syntax highlighting
 
 \title{Raketstyrning}
 \author{}
@@ -36,5 +37,9 @@ Detta projekt har som syfte att simulera styrningen av en raket mot ett givet m√
         \caption{Simulation}
     \end{center}
 \end{figure}
+
+\appendix
+\section{K√§llkod}
+\inputminted{python3}{main.py}
 
 \end{document}
