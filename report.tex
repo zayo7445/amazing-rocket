@@ -135,14 +135,32 @@ kan vi hitta detta \(\alpha\), och därmed vårat \(\theta\), genom att lösa \(
 \newpage
 
 \section{Tolkning och analys}
-\begin{figure}
+Vid körningar av modellen har raketen massan 4 kg, luftmotståndskoefficienten $c = 0.05 kg/m$, och raketmotorns hastighet är $k_m = 700 m/s$. Körning av modellen med solve\_ivp som ODElösare gav en vinkel $\alpha\approx-3.02$, se figur \ref{solve-ivp} för raketens bana vid körning med detta $\alpha$.
+\begin{figure}[h]
     \begin{center}
-        \includegraphics[width=\textwidth]{images/constant-angle-plot.png}
-        \caption{Simulation}
+        \includegraphics[width=\textwidth]{images/solve_ivp-constant-angle-plot.png}
+        \caption{Simulation med solve\_ivp, $\alpha=-3.02$}
+        \label{solve-ivp}
     \end{center}
 \end{figure}
 
+Körning med rk4 med $h=0.01$ som lösare ger istället vinkeln $\alpha\approx-3.05$
+
+\begin{figure}[H]
+    \begin{center}
+        \includegraphics[width=\textwidth]{images/rk4-constant-angle-plot.png}
+        \caption{Simulation med rk4, $\alpha=-3.05$, $h=0.01$}
+    \end{center}
+\end{figure}
+
+Båda lösarna ger en vinkel $\alpha\approx-3$. Denna vinkel innebär den vinkel som raketmotorerna ska vara vinklade under färden. Alltså visar resultatet vid dessa körningar på att raketmotorerna ska vinklas nästan vinkelrätt mot marken för att nå målet i (80,60). I figurerna ovan går det att se hur raketenerna rör sig under färden, raketen färdas först rakt upp tills $y=20$ för att sedan svänga med en konstant vinkel mot och passerar till slut målet. Vi kan se att solve\_ivp använder ett större tidssteg, vilket beror på att det är en adaptiv metod som väljer ett h som uppfyller en viss feltolerans.
+
+
+
+
+
 \appendix
+\newpage
 \section{Källkod}
 \inputminted{python3}{main.py}
 
