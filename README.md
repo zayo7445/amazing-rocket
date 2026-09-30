@@ -1,6 +1,6 @@
 # Kompilera rapporten
 
-Först intallera pygments med `pip install pygments`.  
+Först installera pygments med `pip install pygments`.  
 Därefter behöver flaggan `-shell-escape` läggas till, t.ex. `pdflatex -shell-escape report.tex`.  
 För att fungera med VSCode LaTeX Workshop, lägg till i .vscode/settings.json:
 

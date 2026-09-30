@@ -34,7 +34,7 @@ def u(theta):  # exhaust vector
     return KM * np.array([np.cos(theta), np.sin(theta)])
 
 
-def F(t, v):  # extrernal forces
+def F(t, v):  # external forces
     return m(t) * G - C * np.linalg.norm(v) * v
 
 
@@ -55,9 +55,9 @@ def system(theta):  # ode using steering function
 OdeResult = namedtuple("OdeResult", ["t", "y"])
 
 
-def rk4(f, tspan, y0, h=H):
-    steps = round((tspan[1] - tspan[0]) / h)
-    t = np.linspace(tspan[0], tspan[1], steps + 1)
+def rk4(f, t_span, y0, h=H):
+    steps = round((t_span[1] - t_span[0]) / h)
+    t = np.linspace(t_span[0], t_span[1], steps + 1)
     y = np.zeros((len(t), len(y0)))
     y[0] = y0
 
@@ -114,9 +114,9 @@ def min_dist(angle):  # closest distance from goal using constant theta
     return np.min(dist)
 
 
-# initial guess is to thrust in the opposte direction of the goal
+# initial guess is to thrust in the opposite direction of the goal
 angle = argument(START_POS - GOAL_POS)
-# sovle for what angle reaches goal
+# solve for what angle reaches goal
 angle = fsolve(min_dist, [angle])[0]
 # simulate using that angle
 sol = SOLVER(system(theta_const(angle)), [0, TIME], np.concatenate([START_POS, START_VEL]))
