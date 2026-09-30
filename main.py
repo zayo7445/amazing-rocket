@@ -4,6 +4,8 @@ from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
 from collections import namedtuple
 
+OdeResult = namedtuple("OdeResult", ["t", "y"])
+
 ROCKET_MASS = 4.0
 FUEL_MASS = 4.0
 BURN_RATE = 0.4
@@ -52,9 +54,6 @@ def system(theta):  # ode using steering function
     return fun
 
 
-OdeResult = namedtuple("OdeResult", ["t", "y"])
-
-
 def rk4(f, t_span, y0, h=H):
     steps = round((t_span[1] - t_span[0]) / h)
     t = np.linspace(t_span[0], t_span[1], steps + 1)
@@ -70,9 +69,6 @@ def rk4(f, t_span, y0, h=H):
 
     # transpose and put in OdeResult to match solve_ivp
     return OdeResult(t, np.transpose(y))
-
-
-SOLVER = rk4  # solver to use
 
 
 def theta_const(angle):  # theta function with a constant angle
@@ -114,6 +110,8 @@ def min_dist(angle):  # closest distance from goal using constant theta
     return np.min(dist)
 
 
+SOLVER = rk4  # solver to use
+
 # initial guess is to thrust in the opposite direction of the goal
 angle = argument(START_POS - GOAL_POS)
 # solve for what angle reaches goal
@@ -121,7 +119,7 @@ angle = fsolve(min_dist, [angle])[0]
 # simulate using that angle
 sol = SOLVER(system(theta_const(angle)), [0, TIME], np.concatenate([START_POS, START_VEL]))
 # print that angle
-print(np.rad2deg(angle))
+print("alpha =", angle)
 
 # plot path
 plt.title("Rocket path")
