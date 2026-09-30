@@ -7,6 +7,8 @@
 \author{}
 \date{September 2026}
 
+\newcommand{\bfbar}[1]{\ensuremath{\mathbf{\bar{#1}}}}
+
 \begin{document}
 
 \maketitle
@@ -18,16 +20,121 @@
 Detta projekt har som syfte att simulera styrningen av en raket mot ett givet mål. Detta inkluderar dels att lösa den differentialekvation som beskriver raketens bana, samt att hitta en metod för att styra raketen mot målet. Raketen rör sig i två dimensioner och motorerna går alltid på full kraft, så att styra raketen innebär i detta fall att bestämma den vinkel motorn är riktad mot.
 \newpage
 \section{Matematiska modeller och lösningsmetoder}
+
+Vi utgick från den givna ekvationen
 \[
-    \begin{cases}
-        \mathbf{u_1} = \mathbf{p} \\
-        \mathbf{u_2} = \mathbf{v}
-    \end{cases}
-    \begin{cases}
-        \mathbf{u_1'}=\mathbf{v}=\mathbf{u_2}                                             \\
-        \mathbf{u_2'}=\mathbf{a}=\frac{\mathbf{\bar{F}} + m'(t)\mathbf{\bar{u}}(t)}{m(t)} \\
+    m(t)\bfbar{a}(t) = \bfbar{F} + m'(t) \bfbar{u}(t)
+\]
+där
+\[
+    \begin{aligned}
+         & \bfbar{F}    &  & = m(t) \bfbar{g} - c||\bfbar{v}(t)||\bfbar{v}(t) \\
+         & m(t)         &  & = \begin{cases}
+                                   8 - 0.4t & t \leq 10 \\
+                                   4        & t > 10
+                               \end{cases}                           \\
+         & \bfbar{u}(t) &  & = \begin{pmatrix}
+                                   k_m \cos(\theta(t)) \\
+                                   k_m \sin(\theta(t))
+                               \end{pmatrix}
+    \end{aligned}
+\]
+Ur dessa löses
+\[
+    \begin{aligned}
+         & m'(t)        &  & = \begin{cases}
+                                   -0.4 & t < 10 \\
+                                   0    & t > 10
+                               \end{cases}                                                                    \\
+         & \bfbar{a}(t) &  & = \frac{m(t) \bfbar{g} - c||\bfbar{v}(t)||\bfbar{v}(t) + m'(t) \bfbar{u}(t)}{m(t)}
+    \end{aligned}
+\]
+Vi har valt att utöka definitionen av \(m'(t)\) genom \(m'(10) = -0.4\). Dessutom har vi låtit \(\theta\) bero på positionen och hastigheten utöver tiden för att få
+\[
+    \begin{aligned}
+         & m'(t)             &  & = \begin{cases}
+                                        -0.4 & t \leq 10 \\
+                                        0    & t > 10
+                                    \end{cases}                                                                                                     \\
+         & \bfbar{u}(\theta) &  & = \begin{pmatrix}
+                                        k_m \cos(\theta) \\
+                                        k_m \sin(\theta)
+                                    \end{pmatrix}                                                                                                     \\
+         & \bfbar{a}(t)      &  & = \frac{m(t) \bfbar{g} - c||\bfbar{v}(t)||\bfbar{v}(t) + m'(t) \bfbar{u}(\theta(t, \bfbar{p}(t), \bfbar{v}(t)))}{m(t)}
+    \end{aligned}
+\]
+Efterssom vi är intressedare av raketens position över tid noterar vi att \(\bfbar{p}''=\bfbar{v}'=\bfbar{a}\) och att ekvationen för \(\bfbar{a}(t)\) är en andra ordningens ODE. Vi skriver om denna som ett system av första ordninges ODE:er.
+\[
+    \begin{aligned}
+         & y  &  &
+        = \begin{pmatrix}
+              y_p \\
+              y_v
+          \end{pmatrix}
+        =\begin{pmatrix}
+             \bfbar{p}(t) \\
+             \bfbar{v}(t)
+         \end{pmatrix} \\
+         & y' &  &
+        = \begin{pmatrix}
+              y_p' \\
+              y_v'
+          \end{pmatrix}
+        = \begin{pmatrix}
+              \bfbar{p}'(t) \\
+              \bfbar{v}'(t)
+          \end{pmatrix}
+        = \begin{pmatrix}
+              \bfbar{v}(t) \\
+              \bfbar{a}(t)
+          \end{pmatrix}
+        = \begin{pmatrix}
+              y_v \\
+              \frac{m(t) \bfbar{g} - c||y_v||y_v + m'(t) \bfbar{u}(\theta(t, y_p, y_v))}{m(t)}
+          \end{pmatrix}
+    \end{aligned}
+\]
+där
+\[
+    a(t, y) =
+\]
+
+Efterssom begynnelsevärdena är givna kan vi skriva definiera ett \(f(t, y)\) för att applicera kända lösningsmetoder på problemet \(y'=f(t, y)\).
+\[
+    \begin{aligned}
+         & f(t, y) &  & = \begin{pmatrix}
+                              y_v,
+                              \frac{m(t) \bfbar{g} - c||y_v||y_v + m'(t) \bfbar{u}(\theta(t, y_p, y_v))}{m(t)}
+                          \end{pmatrix} \\
+         & y_0     &  & = \begin{pmatrix}
+                              \bfbar{p}(0),
+                              \bfbar{v}(0)
+                          \end{pmatrix}
+        = \begin{pmatrix}
+              \bfbar{0},
+              \bfbar{0}
+          \end{pmatrix}
+    \end{aligned}
+\]
+ODE:n, och därför lösningen, beror nu fortfarande på funktionen \(\theta\). Givet är att \(\theta = -\frac{\pi}{2}\) innan \(\bfbar{p} \geq 20\) första gången. Vi har valt att definiera ett \(\theta\) som håller en konstant vilkel \(\alpha\) över denna höjd enligt
+\[
+    \theta(t, \bfbar{p}, \bfbar{v}) = \begin{cases}
+        -\frac{\pi}{2} & \bfbar{p} < 20    \\
+        \alpha         & \bfbar{p} \geq 20
     \end{cases}
 \]
+Målet är nu att hitta ett \(\alpha\) så att \(\bfbar{p}(t) = \begin{pmatrix}
+    80,
+    60
+\end{pmatrix}\) för något \(t\). Genom att definiera raketens minsta distans från målet som
+\[
+    D(\alpha) = \min_{t \geq 0}\left(||y_p - \begin{pmatrix}
+            80,
+            60
+        \end{pmatrix}||\right)
+\]
+Kan vi hitta detta \(\alpha\), och därmed vårat \(\theta\), genom att lösa \(D(\alpha) = 0\).
+
 \newpage
 
 \section{Tolkning och analys}
