@@ -131,9 +131,9 @@ Eftersom raketen ska passera genom en given punkt \(\bfbar{g} = (80, 60)\) är m
 kan \(\alpha\), och därmed \(\theta\) hittas genom att lösa \(D(\alpha) = 0\).
 
 \subsection{Lösningsmetoder}
-För att hitta den konstanta vinkeln \(\alpha\) som ger en träff på målet kombinerar vi tre delar: en lösare för ODEn (rk4 eller solve\_ivp), en funktion \texttt{min\_dist} som mäter hur nära målet raketen kommer, och en rotlösare (fsolve) som ändrar \(\alpha\) tills avståndet är noll.
+För att hitta den konstanta vinkeln \(\alpha\) som ger en träff på målet kombinerar vi tre delar: en lösare för ODEn (RK4 eller \texttt{solve\_ivp}), en funktion \texttt{min\_dist} som mäter hur nära målet raketen kommer, och en rotlösare (\texttt{fsolve}) som ändrar \(\alpha\) tills avståndet är noll.
 
-\subsubsection{Runge-Kutta av fjärde ordningen (rk4)}
+\subsubsection{Runge-Kutta av fjärde ordningen (RK4)}
 Som egen ODE lösare har vi implementerat klassisk Runge-Kutta metoden av fjärde ordningen med fast steglängd \(h\).
 Givet ett problem \(y'=f(t,y)\) beräknas lösningen i nästa tidssteg \(t_{i+1}=t_i+h\) enligt
 \[
@@ -146,12 +146,12 @@ Givet ett problem \(y'=f(t,y)\) beräknas lösningen i nästa tidssteg \(t_{i+1}
     \end{aligned}
 \]
 Metoden har globalt fel av ordning \(O(h^4)\) och kräver fyra funktionsanrop per steg.
-I koden används \(f(t,y)\) från avsnittet ovan, där \(y=(\bfbar{p},\bfbar{v})\) är en vektor med fyra komponenter. Funktionen \texttt{rk4} tar in \(f\), tidsintervallet, begynnelsevärdet \(y_0\) och steglängden \(h\). Antalet steg bestäms som \(\text{steg}=(t_{\text{slut}}-t_{\text{start}})/h\), och tidpunkterna \(t_i\) skapas på förhand med lika stora avstånd. Funktionen returnerar tidpunkterna och lösningen i samma format som solve\_ivp, vilket gör att de två lösarna kan bytas ut mot varandra utan att resten av koden ändras. Vi har valt \(h=0.01\) som standard.
+I koden används \(f(t,y)\) från avsnittet ovan, där \(y=(\bfbar{p},\bfbar{v})\) är en vektor med fyra komponenter. Funktionen \texttt{rk4} tar in \(f\), tidsintervallet, begynnelsevärdet \(y_0\) och steglängden \(h\). Antalet steg bestäms som \(\text{steg}=(t_{\text{slut}}-t_{\text{start}})/h\), och tidpunkterna \(t_i\) skapas på förhand med lika stora avstånd. Funktionen returnerar tidpunkterna och lösningen i samma format som \texttt{solve\_ivp}, vilket gör att de två lösarna kan bytas ut mot varandra utan att resten av koden ändras. Vi har valt \(h=0.01\) som standard.
 
 Eftersom \(\theta\) byter värde när raketen når höjden 20 m, och \(m'(t)\) byter värde vid \(t=10\), är högerledet \(f(t,y)\) inte kontinuerligt.
 Noggrannhetsordningen \(O(h^4)\) gäller strikt sett bara där \(f\) är tillräckligt slät.
 Kring dessa övergångar blir felet därför större, men det minskar fortfarande när \(h\) minskar.
-Som jämförelse använder solve\_ivp som standard en adaptiv Runge-Kutta metod (RK45), som själv väljer steglängd utifrån en feltolerans.
+Som jämförelse använder \texttt{solve\_ivp} som standard en adaptiv Runge-Kutta metod (RK45), som själv väljer steglängd utifrån en feltolerans.
 
 \subsubsection{Avstånd till målet (min\_dist)}
 Funktionen \texttt{min\_dist} beräknar \(D(\alpha)\) för ett givet \(\alpha\).
@@ -170,16 +170,16 @@ Den närmaste punkten och avståndet blir då
 \]
 Slutligen är \(D(\alpha)\approx\min_i d_i\).
 I koden görs detta för alla segment samtidigt med vektoroperationer i numpy i stället för en loop.
-Funktionen tar \(\alpha\) som en array med ett element eftersom fsolve anropar den på det sättet.
+Funktionen tar \(\alpha\) som en array med ett element eftersom \texttt{fsolve} anropar den på det sättet.
 
 \subsubsection{Rotlösning med fsolve}
-För att lösa \(D(\alpha)=0\) använder vi scipy funktionen fsolve, som hittar nollställen till en funktion.
+För att lösa \(D(\alpha)=0\) använder vi scipy funktionen \texttt{fsolve}, som hittar nollställen till en funktion.
 Metoden behöver ett startvärde.
 Vi väljer vinkeln för en rakt riktad färd mot målet, men med motorn riktad åt motsatt håll, alltså \(\alpha_0=\arg(\bfbar{p}(0)-\bfbar{g})\), där \(\arg\) är vinkeln mot positiva x-axeln beräknad med \texttt{arctan2}.
 Detta är samma val som vid en raket som styrs rakt mot målet, eftersom partiklarna skjuts ut åt motsatt håll mot färdriktningen.
 
 Funktionen \(D(\alpha)\) är aldrig negativ, så den byter inte tecken vid sin rot utan har ett minimum där, ungefär som \(|x|\) vid \(x=0\).
-Newtonliknande metoder fungerar sämre på sådana problem, och fsolve avslutar därför ofta när steget blir tillräckligt litet snarare än när \(D\) är exakt noll.
+Newtonliknande metoder fungerar sämre på sådana problem, och \texttt{fsolve} avslutar därför ofta när steget blir tillräckligt litet snarare än när \(D\) är exakt noll.
 Dessutom beror \(D\) på den numeriska lösningen av ODEn.
 Olika lösare, eller olika steglängder, ger därför något olika \(D(\alpha)\), vilket förklarar varför de två lösarna ger något olika vinklar \(\alpha\). När \(\alpha\) har hittats simuleras raketens bana en sista gång med den vinkeln, och banan ritas upp.
 
@@ -212,7 +212,7 @@ Båda lösarna ger en vinkel $\alpha\approx-3$. Denna är vinkeln raketmotorerna
 
 Eftersom derivatorna av \(m\) och \(m'\) inte inte har sina diskontinuiteter inom lösningsområdet kommer dessa inte påverka metodens noggrannhet och det var inte nödvändigt att utöka definitionsmängden av \(m'\). Däremot är \(\theta\) och därför även \(\bfbar{a}\) inte deriverbara i punkterna då \(\bfbar{p}_y = 20\) vilket sker för ett \(t \in [0, 4]\). Detta kommer begränsa noggrannhetsordningen hos lösningsmetoderna till som bäst två eftersom \(y\) bara kan deriveras två gånger.
 
-Beräkningen av \(D\) genom \texttt{min\_dist} görs med linjär interpolation vilket påverkar noggrannheten av \(\alpha\) ytterligare. Eftersom \texttt{solve\_ivp} endast adapterar steglängden beroende på varje enskild simulering har den inget sätt att veta hur dess val av steglängd påverkar beräkningen av \(alpha\) inom \texttt{fsolve} och denna är inte garanterad samma feltolerans. I figur \ref{fig:simulations} går båda banorna genom målet vilket är förväntat eftersom \texttt{pyplot.plot} också använder en linjär interpolation mellan punkterna. Däremot följer inte banan i figur \ref{subfig:solve-ivp} raketens sanna väg och värdet på \(\alpha\) givet av figur \ref{subfig:rk4} är mer noggrant helt enkelt för att interpolation är mer noggrann för den mindre steglängden.
+Beräkningen av \(D\) genom \texttt{min\_dist} görs med linjär interpolation vilket påverkar noggrannheten av \(\alpha\) ytterligare. Eftersom \texttt{solve\_ivp} endast adapterar steglängden beroende på varje enskild simulering har den inget sätt att veta hur dess val av steglängd påverkar beräkningen av \(\alpha\) inom \texttt{fsolve} och denna är inte garanterad samma feltolerans. I figur \ref{fig:simulations} går båda banorna genom målet vilket är förväntat eftersom pyplot också använder en linjär interpolation mellan punkterna. Däremot följer inte banan i figur \ref{subfig:solve-ivp} raketens sanna väg och värdet på \(\alpha\) givet av figur \ref{subfig:rk4} är mer noggrant helt enkelt för att interpolation är mer noggrann för den mindre steglängden.
 
 \appendix
 \clearpage
