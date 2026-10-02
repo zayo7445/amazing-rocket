@@ -22,7 +22,7 @@
 \section{Introduktion}
 Detta projekt har som syfte att simulera styrningen av en raket mot ett givet mål. Detta inkluderar både att lösa den differentialekvation som beskriver raketens bana och att hitta en metod för att styra raketen mot målet. Raketen rör sig i två dimensioner och motorerna går alltid på full kraft, så att styra raketen innebär i detta fall att bestämma den vinkel motorn ska riktas.
 
-\section{Matematiska modeller och lösningsmetoder}
+\section{Matematisk modell}
 
 De givna ekvationerna lyder
 \[
@@ -130,10 +130,10 @@ Eftersom raketen ska passera genom en given punkt \(\bfbar{g} = (80, 60)\) är m
 \]
 kan \(\alpha\), och därmed \(\theta\) hittas genom att lösa \(D(\alpha) = 0\).
 
-\subsection{Lösningsmetoder}
+\section{Lösningsmetod}
 För att hitta den konstanta vinkeln \(\alpha\) som ger en träff på målet kombinerar vi tre delar: en lösare för ODEn (RK4 eller \texttt{solve\_ivp}), en funktion \texttt{min\_dist} som mäter hur nära målet raketen kommer, och en rotlösare (\texttt{fsolve}) som ändrar \(\alpha\) tills avståndet är noll.
 
-\subsubsection{Runge-Kutta av fjärde ordningen (RK4)}
+\subsection{Runge-Kutta av fjärde ordningen (RK4)}
 Som egen ODE lösare har vi implementerat klassisk Runge-Kutta metoden av fjärde ordningen med fast steglängd \(h\).
 Givet ett problem \(y'=f(t,y)\) beräknas lösningen i nästa tidssteg \(t_{i+1}=t_i+h\) enligt
 \[
@@ -153,7 +153,7 @@ Noggrannhetsordningen \(O(h^4)\) gäller strikt sett bara där \(f\) är tillrä
 Kring dessa övergångar blir felet därför större, men det minskar fortfarande när \(h\) minskar.
 Som jämförelse använder \texttt{solve\_ivp} som standard en adaptiv Runge-Kutta metod (RK45), som själv väljer steglängd utifrån en feltolerans.
 
-\subsubsection{Avstånd till målet (min\_dist)}
+\subsection{Avstånd till målet (min\_dist)}
 Funktionen \texttt{min\_dist} beräknar \(D(\alpha)\) för ett givet \(\alpha\).
 Först löses ODEn med \(\theta\) enligt ovan, vilket ger raketens position i en följd av punkter \(\bfbar{p}_0, \bfbar{p}_1, \dots, \bfbar{p}_N\).
 Att bara ta det minsta avståndet mellan dessa punkter och målet är otillräckligt, eftersom raketen kan passera målet mellan två tidssteg, särskilt när lösaren tar stora steg.
@@ -172,7 +172,7 @@ Slutligen är \(D(\alpha)\approx\min_i d_i\).
 I koden görs detta för alla segment samtidigt med vektoroperationer i numpy i stället för en loop.
 Funktionen tar \(\alpha\) som en array med ett element eftersom \texttt{fsolve} anropar den på det sättet.
 
-\subsubsection{Rotlösning med fsolve}
+\subsection{Rotlösning med fsolve}
 För att lösa \(D(\alpha)=0\) använder vi scipy funktionen \texttt{fsolve}, som hittar nollställen till en funktion.
 Metoden behöver ett startvärde.
 Vi väljer vinkeln för en rakt riktad färd mot målet, men med motorn riktad åt motsatt håll, alltså \(\alpha_0=\arg(\bfbar{p}(0)-\bfbar{g})\), där \(\arg\) är vinkeln mot positiva x-axeln beräknad med \texttt{arctan2}.
