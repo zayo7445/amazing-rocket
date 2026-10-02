@@ -20,26 +20,29 @@
 
 \newpage
 \section{Introduktion}
-Detta projekt har som syfte att simulera styrningen av en raket mot ett givet mål. Detta inkluderar dels att lösa den differentialekvation som beskriver raketens bana, samt att hitta en metod för att styra raketen mot målet. Raketen rör sig i två dimensioner och motorerna går alltid på full kraft, så att styra raketen innebär i detta fall att bestämma den vinkel motorn är riktad mot.
+Detta projekt har som syfte att simulera styrningen av en raket mot ett givet mål. Detta inkluderar både att lösa den differentialekvation som beskriver raketens bana och att hitta en metod för att styra raketen mot målet. Raketen rör sig i två dimensioner och motorerna går alltid på full kraft, så att styra raketen innebär i detta fall att bestämma den vinkel motorn ska riktas.
 
 \section{Matematiska modeller och lösningsmetoder}
 
-Vi utgick från den givna ekvationen
-\[
-    m(t)\bfbar{a}(t) = \bfbar{F} + m'(t) \bfbar{u}(t)
-\]
-där
+De givna ekvationerna lyder
 \[
     \begin{aligned}
-        \bfbar{F}    & = m(t) \bfbar{g} - c||\bfbar{v}(t)||\bfbar{v}(t) \\
-        m(t)         & = \begin{cases}
-                             8 - 0.4t & t \leq 10 \\
-                             4        & t > 10
-                         \end{cases}                           \\
-        \bfbar{u}(t) & = \begin{pmatrix}
-                             k_m \cos(\theta(t)) \\
-                             k_m \sin(\theta(t))
-                         \end{pmatrix}
+        m(t)\bfbar{a}(t) & = \bfbar{F} + m'(t) \bfbar{u}(t)                 \\
+        \bfbar{F}        & = m(t) \bfbar{g} - c||\bfbar{v}(t)||\bfbar{v}(t) \\
+        m(t)             & = \begin{cases}
+                                 8 - 0.4t & t \leq 10 \\
+                                 4        & t > 10
+                             \end{cases}                           \\
+        \bfbar{u}(t)     & = \begin{pmatrix}
+                                 k_m \cos(\theta(t)) \\
+                                 k_m \sin(\theta(t))
+                             \end{pmatrix}                            \\
+        \bfbar{g}        & = \begin{pmatrix}
+                                 0 \\
+                                 -9.82
+                             \end{pmatrix}                                 \\
+        c                & = 0.05                                           \\
+        k_m              & = 700                                            \\
     \end{aligned}
 \]
 Ur dessa löses
@@ -52,7 +55,7 @@ Ur dessa löses
         \bfbar{a}(t) & = \frac{m(t) \bfbar{g} - c||\bfbar{v}(t)||\bfbar{v}(t) + m'(t) \bfbar{u}(t)}{m(t)}
     \end{aligned}
 \]
-Vi har valt att utöka \(m'(t)\) till att vara definierad på hela \(\mathbb{R}\). Dessutom har vi låtit \(\theta\) även bero på positionen och hastigheten för att få
+Därefter kan \(m'(t)\) utökas till att vara definierad på hela \(\mathbb{R}\). Dessutom kan \(\theta\) även låtas bero på positionen och hastigheten för att få
 \[
     \begin{aligned}
         m'(t)             & = \begin{cases}
@@ -66,7 +69,7 @@ Vi har valt att utöka \(m'(t)\) till att vara definierad på hela \(\mathbb{R}\
         \bfbar{a}(t)      & = \frac{m(t) \bfbar{g} - c||\bfbar{v}(t)||\bfbar{v}(t) + m'(t) \bfbar{u}(\theta(t, \bfbar{p}(t), \bfbar{v}(t)))}{m(t)}
     \end{aligned}
 \]
-Eftersom vi är intresserade av raketens position över tid noterar vi att \(\bfbar{p}''=\bfbar{v}'=\bfbar{a}\) och att ekvationen för \(\bfbar{a}(t)\) är en andra ordningens ODE. Vi skriver om denna som ett system av första ordningens ODE:er.
+Eftersom det intressanta värdet är raketens position över tid noteras att \(\bfbar{p}''=\bfbar{v}'=\bfbar{a}\) och att ekvationen för \(\bfbar{a}(t)\) är en andra ordningens ODE. Den kan därför skrivas om som ett system av första ordningens ODE:er.
 \[
     \begin{aligned}
         y  &
@@ -97,7 +100,7 @@ Eftersom vi är intresserade av raketens position över tid noterar vi att \(\bf
           \end{pmatrix}
     \end{aligned}
 \]
-Eftersom begynnelsevärdena är givna kan vi definiera ett \(f(t, y)\) för att applicera kända lösningsmetoder på problemet \(y'=f(t, y)\).
+Eftersom begynnelsevärdena är givna kan ett \(f(t, y)\) definieras för att applicera kända lösningsmetoder på problemet \(y'=f(t, y)\).
 \[
     \begin{aligned}
         f(t, y) & = \begin{pmatrix}
@@ -114,20 +117,18 @@ Eftersom begynnelsevärdena är givna kan vi definiera ett \(f(t, y)\) för att 
           \end{pmatrix}
     \end{aligned}
 \]
-ODE:n, och därför lösningen, beror nu fortfarande på funktionen \(\theta\). Givet är att \(\theta = -\frac{\pi}{2}\) innan \(\bfbar{p} \geq 20\) första gången. Vi har valt att definiera ett \(\theta\) som håller en konstant vinkel \(\alpha\) över denna höjd enligt
+ODE:n, och därför lösningen, beror nu fortfarande på funktionen \(\theta\). Givet är att \(\theta = -\frac{\pi}{2}\) innan \(\bfbar{p} \geq 20\) första gången. Ett alternativ är att definiera ett \(\theta\) som håller en konstant vinkel \(\alpha\) över denna höjd enligt
 \[
     \theta(t, \bfbar{p}, \bfbar{v}) = \begin{cases}
-        -\frac{\pi}{2} & \bfbar{p} < 20    \\
-        \alpha         & \bfbar{p} \geq 20
+        -\frac{\pi}{2} & \bfbar{p}_y < 20    \\
+        \alpha         & \bfbar{p}_y \geq 20
     \end{cases}
 \]
-Eftersom raketen ska passera genom en given punkt \(\bfbar{g} = (80, 60)\) där är målet nu att hitta ett \(\alpha\) så att \(\bfbar{p}(t) = \bfbar{g}\) för något \(t\). Genom att definiera raketens minsta distans från målet som
+Eftersom raketen ska passera genom en given punkt \(\bfbar{g} = (80, 60)\) är målet nu att hitta ett \(\alpha\) så att \(\bfbar{p}(t) = \bfbar{g}\) för något \(t\). Genom att definiera raketens minsta distans från målet som
 \[
     D(\alpha) = \min_{t \geq 0}\left(||y_p - \bfbar{g}||\right)
 \]
-kan vi hitta detta \(\alpha\), och därmed vårat \(\theta\), genom att lösa \(D(\alpha) = 0\).
-
-
+kan \(\alpha\), och därmed \(\theta\) hittas genom att lösa \(D(\alpha) = 0\).
 
 \subsection{Lösningsmetoder}
 För att hitta den konstanta vinkeln \(\alpha\) som ger en träff på målet kombinerar vi tre delar: en lösare för ODEn (rk4 eller solve\_ivp), en funktion \texttt{min\_dist} som mäter hur nära målet raketen kommer, och en rotlösare (fsolve) som ändrar \(\alpha\) tills avståndet är noll.
@@ -137,10 +138,10 @@ Som egen ODE lösare har vi implementerat klassisk Runge-Kutta metoden av fjärd
 Givet ett problem \(y'=f(t,y)\) beräknas lösningen i nästa tidssteg \(t_{i+1}=t_i+h\) enligt
 \[
     \begin{aligned}
-        k_1     & = f(t_i, y_i) \\
+        k_1     & = f(t_i, y_i)                                                \\
         k_2     & = f\left(t_i + \tfrac{h}{2},\, y_i + \tfrac{h}{2} k_1\right) \\
         k_3     & = f\left(t_i + \tfrac{h}{2},\, y_i + \tfrac{h}{2} k_2\right) \\
-        k_4     & = f(t_{i+1},\, y_i + h k_3) \\
+        k_4     & = f(t_{i+1},\, y_i + h k_3)                                  \\
         y_{i+1} & = y_i + \frac{h}{6}\left(k_1 + 2k_2 + 2k_3 + k_4\right)
     \end{aligned}
 \]
@@ -184,18 +185,18 @@ Olika lösare, eller olika steglängder, ger därför något olika \(D(\alpha)\)
 
 
 
-\section{Tolkning och analys}
+\section{Resultat}
 \begin{figure}[htbp]
     \begin{center}
         \begin{subfigure}{0.49\linewidth}
             \includegraphics[width=\linewidth]{images/solve_ivp-constant-angle-plot.png}
-            \caption{solve\_ivp med $\alpha=-3.02$}
+            \caption{\texttt{solve\_ivp} med $\alpha=-3.02$}
             \label{subfig:solve-ivp}
         \end{subfigure}
         \hfill
         \begin{subfigure}{0.49\linewidth}
             \includegraphics[width=\linewidth]{images/rk4-constant-angle-plot.png}
-            \caption{rk4 med $\alpha=-3.05$, $h=0.01$}
+            \caption{RK4 med $\alpha=-3.05$, $h=0.01$}
             \label{subfig:rk4}
         \end{subfigure}
         \caption{Simuleringar med olika metoder och parametrar}
@@ -203,9 +204,15 @@ Olika lösare, eller olika steglängder, ger därför något olika \(D(\alpha)\)
     \end{center}
 \end{figure}
 
-Vid körningar av modellen har raketen massan 4 kg, luftmotståndskoefficienten $c = 0.05 kg/m$, och raketmotorns hastighet är $k_m = 700 m/s$. Körning av fsolve för att hitta konstanta vinkeln $\alpha$ med solve\_ivp som ODE-lösare gav en vinkel $\alpha\approx-3.02$. Vid körning med rk4 med $h=0.01$ som lösare ger istället vinkeln $\alpha\approx-3.05$ se figur \ref{fig:simulations} för raketens bana vid körningar med de två metoderna och dess beräknade vinklar.
+Simulationerna kördes för \(t \in [0, 4]\). Användning av \texttt{fsolve} för att hitta konstanta vinkeln $\alpha$ med \texttt{solve\_ivp} som ODE-lösare gav en vinkel $\alpha\approx-3.02$. Vid körning med RK4 med $h=0.01$ som lösare fås istället vinkeln $\alpha\approx-3.05$. Se figur \ref{fig:simulations} för raketens bana vid körningar med de två metoderna och dess beräknade vinklar.
 
-Båda lösarna ger en vinkel $\alpha\approx-3.0$. Denna vinkel innebär den vinkel som raketmotorerna ska vara vinklade under färden. Alltså visar resultatet vid dessa körningar på att raketmotorerna ska vinklas nästan vinkelrätt mot marken för att nå målet i (80,60). I figurerna ovan går det att se hur raketerna rör sig under färden, raketen färdas först rakt upp tills $y=20$ för att sedan svänga med en konstant vinkel mot och passerar till slut målet. Vi kan se att solve\_ivp använder ett större tidssteg, vilket beror på att det är en adaptiv metod som väljer ett h som uppfyller en viss feltolerans.
+\section{Tolkning och analys}
+
+Båda lösarna ger en vinkel $\alpha\approx-3$. Denna är vinkeln raketmotorerna ska riktas under färden efter raketen nått en höjd på 20 meter. Resultaten visar därför att raketmotorerna ska vinklas nästan vinkelrätt mot marken för att nå målet i \((80,60)\). I figur \ref{fig:simulations} visas hur raketen rör sig under färden. Raketen färdas först rakt upp tills den når $y=20$ för att sedan svänga mot och till slut passera målet. Vi kan se att \texttt{solve\_ivp} använder ett större tidssteg, vilket beror på att det är en adaptiv metod som väljer ett h som uppfyller en viss feltolerans.
+
+Eftersom derivatorna av \(m\) och \(m'\) inte inte har sina diskontinuiteter inom lösningsområdet kommer dessa inte påverka metodens noggrannhet och det var inte nödvändigt att utöka definitionsmängden av \(m'\). Däremot är \(\theta\) och därför även \(\bfbar{a}\) inte deriverbara i punkterna då \(\bfbar{p}_y = 20\) vilket sker för ett \(t \in [0, 4]\). Detta kommer begränsa noggrannhetsordningen hos lösningsmetoderna till som bäst två eftersom \(y\) bara kan deriveras två gånger.
+
+Beräkningen av \(D\) genom \texttt{min\_dist} görs med linjär interpolation vilket påverkar noggrannheten av \(\alpha\) ytterligare. Eftersom \texttt{solve\_ivp} endast adapterar steglängden beroende på varje enskild simulering har den inget sätt att veta hur dess val av steglängd påverkar beräkningen av \(alpha\) inom \texttt{fsolve} och denna är inte garanterad samma feltolerans. I figur \ref{fig:simulations} går båda banorna genom målet vilket är förväntat eftersom \texttt{pyplot.plot} också använder en linjär interpolation mellan punkterna. Däremot följer inte banan i figur \ref{subfig:solve-ivp} raketens sanna väg och värdet på \(\alpha\) givet av figur \ref{subfig:rk4} är mer noggrant helt enkelt för att interpolation är mer noggrann för den mindre steglängden.
 
 \appendix
 \clearpage
