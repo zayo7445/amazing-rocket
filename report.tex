@@ -127,6 +127,63 @@ Eftersom raketen ska passera genom en given punkt \(\bfbar{g} = (80, 60)\) där 
 \]
 kan vi hitta detta \(\alpha\), och därmed vårat \(\theta\), genom att lösa \(D(\alpha) = 0\).
 
+
+
+\subsection{Lösningsmetoder}
+För att hitta den konstanta vinkeln \(\alpha\) som ger en träff på målet kombinerar vi tre delar: en lösare för ODEn (rk4 eller solve\_ivp), en funktion \texttt{min\_dist} som mäter hur nära målet raketen kommer, och en rotlösare (fsolve) som ändrar \(\alpha\) tills avståndet är noll.
+
+\subsubsection{Runge-Kutta av fjärde ordningen (rk4)}
+Som egen ODE lösare har vi implementerat klassisk Runge-Kutta metoden av fjärde ordningen med fast steglängd \(h\).
+Givet ett problem \(y'=f(t,y)\) beräknas lösningen i nästa tidssteg \(t_{i+1}=t_i+h\) enligt
+\[
+    \begin{aligned}
+        k_1     & = f(t_i, y_i) \\
+        k_2     & = f\left(t_i + \tfrac{h}{2},\, y_i + \tfrac{h}{2} k_1\right) \\
+        k_3     & = f\left(t_i + \tfrac{h}{2},\, y_i + \tfrac{h}{2} k_2\right) \\
+        k_4     & = f(t_{i+1},\, y_i + h k_3) \\
+        y_{i+1} & = y_i + \frac{h}{6}\left(k_1 + 2k_2 + 2k_3 + k_4\right)
+    \end{aligned}
+\]
+Metoden har globalt fel av ordning \(O(h^4)\) och kräver fyra funktionsanrop per steg.
+I koden används \(f(t,y)\) från avsnittet ovan, där \(y=(\bfbar{p},\bfbar{v})\) är en vektor med fyra komponenter. Funktionen \texttt{rk4} tar in \(f\), tidsintervallet, begynnelsevärdet \(y_0\) och steglängden \(h\). Antalet steg bestäms som \(\text{steg}=(t_{\text{slut}}-t_{\text{start}})/h\), och tidpunkterna \(t_i\) skapas på förhand med lika stora avstånd. Funktionen returnerar tidpunkterna och lösningen i samma format som solve\_ivp, vilket gör att de två lösarna kan bytas ut mot varandra utan att resten av koden ändras. Vi har valt \(h=0.01\) som standard.
+
+Eftersom \(\theta\) byter värde när raketen når höjden 20 m, och \(m'(t)\) byter värde vid \(t=10\), är högerledet \(f(t,y)\) inte kontinuerligt.
+Noggrannhetsordningen \(O(h^4)\) gäller strikt sett bara där \(f\) är tillräckligt slät.
+Kring dessa övergångar blir felet därför större, men det minskar fortfarande när \(h\) minskar.
+Som jämförelse använder solve\_ivp som standard en adaptiv Runge-Kutta metod (RK45), som själv väljer steglängd utifrån en feltolerans.
+
+\subsubsection{Avstånd till målet (min\_dist)}
+Funktionen \texttt{min\_dist} beräknar \(D(\alpha)\) för ett givet \(\alpha\).
+Först löses ODEn med \(\theta\) enligt ovan, vilket ger raketens position i en följd av punkter \(\bfbar{p}_0, \bfbar{p}_1, \dots, \bfbar{p}_N\).
+Att bara ta det minsta avståndet mellan dessa punkter och målet är otillräckligt, eftersom raketen kan passera målet mellan två tidssteg, särskilt när lösaren tar stora steg.
+Vi tolkar därför banan som en bruten linje och beräknar avståndet till varje linjesegment.
+
+För segmentet från \(\bfbar{a}=\bfbar{p}_i\) till \(\bfbar{b}=\bfbar{p}_{i+1}\) låter vi \(\bfbar{d}=\bfbar{b}-\bfbar{a}\) och projicerar målet \(\bfbar{g}\) på linjen genom segmentet:
+\[
+    s = \frac{(\bfbar{g}-\bfbar{a})\cdot \bfbar{d}}{\bfbar{d}\cdot \bfbar{d}}
+\]
+För att den närmaste punkten ska ligga på själva segmentet begränsas \(s\) till intervallet \([0,1]\).
+Den närmaste punkten och avståndet blir då
+\[
+    \bfbar{c} = \bfbar{a} + \min(\max(s,0),1)\,\bfbar{d}, \qquad d_i = ||\bfbar{c}-\bfbar{g}||
+\]
+Slutligen är \(D(\alpha)\approx\min_i d_i\).
+I koden görs detta för alla segment samtidigt med vektoroperationer i numpy i stället för en loop.
+Funktionen tar \(\alpha\) som en array med ett element eftersom fsolve anropar den på det sättet.
+
+\subsubsection{Rotlösning med fsolve}
+För att lösa \(D(\alpha)=0\) använder vi scipy funktionen fsolve, som hittar nollställen till en funktion.
+Metoden behöver ett startvärde.
+Vi väljer vinkeln för en rakt riktad färd mot målet, men med motorn riktad åt motsatt håll, alltså \(\alpha_0=\arg(\bfbar{p}(0)-\bfbar{g})\), där \(\arg\) är vinkeln mot positiva x-axeln beräknad med \texttt{arctan2}.
+Detta är samma val som vid en raket som styrs rakt mot målet, eftersom partiklarna skjuts ut åt motsatt håll mot färdriktningen.
+
+Funktionen \(D(\alpha)\) är aldrig negativ, så den byter inte tecken vid sin rot utan har ett minimum där, ungefär som \(|x|\) vid \(x=0\).
+Newtonliknande metoder fungerar sämre på sådana problem, och fsolve avslutar därför ofta när steget blir tillräckligt litet snarare än när \(D\) är exakt noll.
+Dessutom beror \(D\) på den numeriska lösningen av ODEn.
+Olika lösare, eller olika steglängder, ger därför något olika \(D(\alpha)\), vilket förklarar varför de två lösarna ger något olika vinklar \(\alpha\). När \(\alpha\) har hittats simuleras raketens bana en sista gång med den vinkeln, och banan ritas upp.
+
+
+
 \section{Tolkning och analys}
 \begin{figure}[htbp]
     \begin{center}
